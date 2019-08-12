@@ -44,17 +44,18 @@ class RequestClient(object):
         apiname = root.tag
         err = root.attrib.get("ErrCode")
         success = SUCCESS_MAP[root.attrib["Success"]]
-        red = None
-        if apiname == "Init":
-            red = "{}/{}/{}?{}={}".format(
+        redirect_url = None
+        session_id = root.attrib.get(constants.PaytureParams.SessionId)
+        if success and apiname == "Init":
+            redirect_url = "{}/{}/{}?{}={}".format(
                 self._merchant.HOST,
                 self._apiType,
                 self._sessionType,
                 constants.PaytureParams.SessionId,
-                root.attrib.get(constants.PaytureParams.SessionId),
+                session_id,
             )
         response = paytureresponse.PaytureResponse(
-            apiname, success, err, RedirectURL=red
+            apiname, success, err, SessionId=session_id, RedirectURL=redirect_url
         )
         return response
 
