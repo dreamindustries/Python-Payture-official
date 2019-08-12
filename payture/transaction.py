@@ -42,7 +42,7 @@ class RequestClient(object):
             print(child.tag, child.attrib)
         print("=" * 30 + "\n\n\n")
         apiname = root.tag
-        err = root.attrib['ErrCode']
+        err = root.attrib.get("ErrCode")
         success = SUCCESS_MAP[root.attrib["Success"]]
         red = None
         if apiname == "Init":
@@ -51,7 +51,7 @@ class RequestClient(object):
                 self._apiType,
                 self._sessionType,
                 constants.PaytureParams.SessionId,
-                root.attrib[constants.PaytureParams.SessionId],
+                root.attrib.get(constants.PaytureParams.SessionId),
             )
         response = paytureresponse.PaytureResponse(
             apiname, success, err, RedirectURL=red
