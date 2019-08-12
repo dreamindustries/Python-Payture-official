@@ -1,3 +1,4 @@
+import logging
 import xml.etree.ElementTree as ET
 
 import requests
@@ -7,6 +8,7 @@ from payture import paytureresponse
 
 
 SUCCESS_MAP = {"True": True, "False": False}
+logger = logging.getLogger("payture.transaction")
 
 
 class RequestClient(object):
@@ -18,7 +20,7 @@ class RequestClient(object):
     def _post(self, url, content):
         """Sync "POST" HTTP method for pass data to Payture"""
         r = requests.post(url, content)
-        print("Response:\n" + r.text)
+        logger.info("Response:\n" + r.text)
         return self._parseXMLResponse(r.text)
 
     def _parseXMLResponse(self, responseBody):
@@ -36,11 +38,11 @@ class RequestClient(object):
         """
 
         root = ET.fromstring(responseBody)
-        print(root.attrib)
-        print("\n\n\n" + "=" * 30)
+        logger.info(root.attrib)
+        logger.info("\n\n\n" + "=" * 30)
         for child in root:
-            print(child.tag, child.attrib)
-        print("=" * 30 + "\n\n\n")
+            logger.info(child.tag, child.attrib)
+        logger.info("=" * 30 + "\n\n\n")
         apiname = root.tag
         err = root.attrib.get("ErrCode")
         success = SUCCESS_MAP[root.attrib["Success"]]
