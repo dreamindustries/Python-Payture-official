@@ -7,7 +7,7 @@ from payture import constants
 from payture import paytureresponse
 
 
-SUCCESS_MAP = {"True": True, "False": False}
+SUCCESS_MAP = {"True": True, "False": False, "3DS": False}
 logger = logging.getLogger("payture.transaction")
 
 
@@ -46,6 +46,7 @@ class RequestClient(object):
         apiname = root.tag
         err = root.attrib.get("ErrCode")
         success = SUCCESS_MAP[root.attrib["Success"]]
+        is_3ds = root.attrib["Success"] == "3DS"
         redirect_url = None
         session_id = root.attrib.get(constants.PaytureParams.SessionId)
         if success and apiname == "Init":
@@ -57,7 +58,7 @@ class RequestClient(object):
                 session_id,
             )
         response = paytureresponse.PaytureResponse(
-            apiname, success, err, SessionId=session_id, RedirectURL=redirect_url
+            apiname, success, err, SessionId=session_id, RedirectURL=redirect_url, Is3DS=is_3ds,
         )
         return response
 
