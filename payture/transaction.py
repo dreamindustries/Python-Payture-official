@@ -19,8 +19,9 @@ class RequestClient(object):
 
     def _post(self, url, content):
         """Sync "POST" HTTP method for pass data to Payture"""
+        logger.info("Request ({}): {}".format(url, content))
         r = requests.post(url, content)
-        logger.info("Response:\n" + r.text)
+        logger.info("Response: {}".format(r.text))
         return self._parseXMLResponse(r.text)
 
     def _parseXMLResponse(self, responseBody):
@@ -38,11 +39,10 @@ class RequestClient(object):
         """
 
         root = ET.fromstring(responseBody)
-        logger.info(root.attrib)
-        logger.info("\n\n\n" + "=" * 30)
+        logger.info("Response root attributes: {}".format(root.attrib))
         for child in root:
-            logger.info(child.tag, child.attrib)
-        logger.info("=" * 30 + "\n\n\n")
+            logger.info("Response child ({}): {}".format(child.tag, child.attrib))
+
         apiname = root.tag
         err = root.attrib.get("ErrCode")
         success = SUCCESS_MAP[root.attrib["Success"]]
