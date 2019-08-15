@@ -39,8 +39,10 @@ class Customer(EncodeString):
     def __init__(self, login, password, phone=None, email=None):
         self.VWUserLgn = login
         self.VWUserPsw = password
-        self.PhoneNumber = phone
-        self.Email = email
+        if phone is not None:
+            self.PhoneNumber = phone
+        if email is not None:
+            self.Email = email
         super(Customer, self).__init__()
 
 

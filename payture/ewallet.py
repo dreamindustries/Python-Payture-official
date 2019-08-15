@@ -50,14 +50,14 @@ class TransactionEWallet(transaction.Transaction):
         )
         return self._expandInternal(constants.PaytureParams.DATA, str)
 
-    def expandForMerchantPayReg(self, customer, cardId, secureCode, data):
+    def expandForMerchantPayReg(self, customer, cardId, data, secureCode=None):
         """Expand transaction for EWallet Methods: Pay (Merchant side for REGISTERED card)
 
         Keyword parameters:
         customer -- Customer object
         cardId -- CardId identifier in Payture system
-        secureCode -- CVC2/CVV2
         data -- Data object. SessionType and IP fields are required. Optional  ConfimCode and CustomFields
+        secureCode -- CVC2/CVV2
 
         Return value:
         Returns current expanded transaction
@@ -66,14 +66,17 @@ class TransactionEWallet(transaction.Transaction):
         if customer is None or cardId is None:
             return self
         self._sessionType = data.SessionType
-        str = (
-            customer._getPropertiesString()
-            + "{}={};".format(constants.PaytureParams.CardId, cardId)
-            + "{}={};".format(constants.PaytureParams.SecureCode, secureCode)
-            + data._getPropertiesString()
-            + data.CustomFields
-        )
-        return self._expandInternal(constants.PaytureParams.DATA, str)
+
+        data_parts = [
+            customer._getPropertiesString(),
+            "{}={};".format(constants.PaytureParams.CardId, cardId)
+        ]
+
+        if secureCode is not None:
+            data_parts.append("{}={};".format(constants.PaytureParams.SecureCode, secureCode))
+
+        data_parts.extend((data._getPropertiesString(), data.CustomFields))
+        return self._expandInternal(constants.PaytureParams.DATA, ''.join(data_parts))
 
     def expandCustomer(self, customer):
         """Expand transaction for EWallet Methods: Register/Update/Delete/Check/Getlist

@@ -14,6 +14,11 @@ class PaytureResponse(object):
                 self.ListCards = value
             elif key == "ResponseBodyXML":
                 self.ResponseBodyXML = value
+            elif key == "SessionId":
+                self.SessionId = value
+            elif key == "Is3DS":
+                self.Is3DS = value
+
         super(PaytureResponse, self).__init__()
 
     @classmethod

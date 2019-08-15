@@ -1,3 +1,4 @@
+import logging
 import xml.etree.ElementTree as ET
 
 import requests
@@ -6,7 +7,8 @@ from payture import constants
 from payture import paytureresponse
 
 
-SUCCESS_MAP = {"True": True, "False": False}
+SUCCESS_MAP = {"True": True, "False": False, "3DS": False}
+logger = logging.getLogger("payture.transaction")
 
 
 class RequestClient(object):
@@ -17,8 +19,9 @@ class RequestClient(object):
 
     def _post(self, url, content):
         """Sync "POST" HTTP method for pass data to Payture"""
+        logger.info("Request ({}): {}".format(url, content))
         r = requests.post(url, content)
-        print("Response:\n" + r.text)
+        logger.info("Response: {}".format(r.text))
         return self._parseXMLResponse(r.text)
 
     def _parseXMLResponse(self, responseBody):
@@ -36,25 +39,26 @@ class RequestClient(object):
         """
 
         root = ET.fromstring(responseBody)
-        print(root.attrib)
-        print("\n\n\n" + "=" * 30)
+        logger.info("Response root attributes: {}".format(root.attrib))
         for child in root:
-            print(child.tag, child.attrib)
-        print("=" * 30 + "\n\n\n")
+            logger.info("Response child ({}): {}".format(child.tag, child.attrib))
+
         apiname = root.tag
-        err = root.attrib['ErrCode']
+        err = root.attrib.get("ErrCode")
         success = SUCCESS_MAP[root.attrib["Success"]]
-        red = None
-        if apiname == "Init":
-            red = "{}/{}/{}?{}={}".format(
+        is_3ds = root.attrib["Success"] == "3DS"
+        redirect_url = None
+        session_id = root.attrib.get(constants.PaytureParams.SessionId)
+        if success and apiname == "Init":
+            redirect_url = "{}/{}/{}?{}={}".format(
                 self._merchant.HOST,
                 self._apiType,
                 self._sessionType,
                 constants.PaytureParams.SessionId,
-                root.attrib[constants.PaytureParams.SessionId],
+                session_id,
             )
         response = paytureresponse.PaytureResponse(
-            apiname, success, err, RedirectURL=red
+            apiname, success, err, SessionId=session_id, RedirectURL=redirect_url, Is3DS=is_3ds,
         )
         return response
 
